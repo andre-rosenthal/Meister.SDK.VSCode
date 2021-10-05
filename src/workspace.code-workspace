@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"typescript.tsdk": "./node_modules/typescript/lib",
+		"typescript.tsc.autoDetect": "off"
+	}
+}

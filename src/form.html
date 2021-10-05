@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <form action="/action_page.php">
+    <label for="fname"><b> enter the URL for the SAP Gateway System (as Http://server.com:port or
+        Https://server.com:port )</b></label><br>
+    <input type="text" id="getway" style="margin-top:1%; margin-bottom: 1%; width: 50%;" name="fname"><br>
+    <label for="lname"><b>Please enter the client number</b></label><br>
+    <input type="text" id="lname" name="lname" style="margin-top:1%; margin-bottom: 1%; width:20%;"><br>
+    <label for="lname"><b>Please enter the SAP UserId </b></label><br>
+    <input type="text" id="lname" name="lname" style="margin-top:1%; margin-bottom: 1%; width: 20%;"><br>
+    <label for="lname"><b>Lastly Please enter the SAP UserId Password</b></label><br>
+    <input type="password" id="lname" name="lname" style="margin-top:1%; margin-bottom: 1%; width: 20%;"><br>
+    <input type="submit" id="test" value="Test connection" onclick="() => testConnection()" style="margin-top: 2%;">
+  </form>
+</body>
+<script>
+  function test() {
+    const getway = document.getElementById("getway").value;
+    const clientNumber = document.getElementById("clientNumber").value;
+    const sapUserId = document.getElementById("sapUserId").value;
+    const password = document.getElementById("password").value;
+    fetch(`https://localhost:3005/api/Meister/Login/https/${getway}/${clientNumber}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': Basic + btoa(sapUserId + ':' + password)
+      }
+    }).then(res => {
+      console.log(res.status);
+    })
+    document.getElementById("h1").innerText = btoa(sapUserId + ':' + password)
+  }
+
+</script>
+
+</html>
