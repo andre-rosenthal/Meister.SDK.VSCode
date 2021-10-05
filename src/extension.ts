@@ -21,6 +21,7 @@ function testConnection() {
 
 	return true;
 }
+// await webView.CoreWebView2.ExecuteScriptAsync("window.addEventListener('contextmenu', window => {window.preventDefault();});");
 function connect(gateway, clientNumber, sapUserId, password) {
 	console.log(clientNumber);
 	console.log("kkk");
@@ -49,7 +50,9 @@ function getWebviewContent() {
     <label for="lname" ><b>Lastly Please enter the SAP  UserId Password</b></label><br>
     <input type="password" id="password" name="password"  style="margin-top:1%; margin-bottom: 1%; width: 20%;"><br>
     <input type="button" id="test" value="Test connection" onclick="testConnection();" style="margin-top: 2%;">
-  </form>   
+  </form> 
+  	  <h1 id="lines-of-code-counter"></h1>
+  
 	  <script>
 	  function testConnection() {
 		const gateway = document.getElementById("gateway").value;
@@ -71,14 +74,48 @@ function getWebviewContent() {
 			console.log('xcstr');
 		  });
 	  }
+		
 	  </script>
   </body>
   </html>`;
 }
+// function getWebviewContent() {
+// 	return `<!DOCTYPE html>
+//   <html lang="en">
+//   <head>
+// 	  <meta charset="UTF-8">
+// 	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+// 	  <title>Cat Coding</title>
+//   </head>
+//   <body>
+//   <form action="/action_page.php">
+//   <label for="fname"><b> enter the URL for the SAP Gateway System (as Http://server.com:port or Https://server.com:port )</b></label><br>
+//   <input type="text" id="getway" style="margin-top:1%; margin-bottom: 1%; width: 50%;"  name="fname" ><br>
+//   <label for="lname" ><b>Please enter the client number</b></label><br>
+//   <input type="text" id="lname" name="lname"  style="margin-top:1%; margin-bottom: 1%; width:20%;"><br>
+//   <label for="lname" ><b>Please enter the SAP UserId </b></label><br>
+//   <input type="text" id="lname" name="lname"  style="margin-top:1%; margin-bottom: 1%; width: 20%;"><br>
+//   <label for="lname" ><b>Lastly Please enter the SAP  UserId Password</b></label><br>
+//   <input type="password" id="lname" name="lname"  style="margin-top:1%; margin-bottom: 1%; width: 20%;"><br>
+//   <input type="submit" id="test" value="Test connection" onclick="testConnection();" style="margin-top: 2%;">
+// </form> 
+// <script>
+// console.log("lllll);
 
+//   function testConnection() {
+// console.log("kkkk);
+
+//   } 
+
+// </script>
+//   </body>
+
+//   </html>`;
+// }
 
 export function activate(context: vscode.ExtensionContext) {
 
+	console.log(vscode.workspace.workspaceFolders);
 
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
