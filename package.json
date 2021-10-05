@@ -50,8 +50,30 @@
 					"id": "endPoints",
 					"name": "endPoints"
 				}
+			],
+			"explorer": [
+				{
+					"id": "jsonOutline",
+					"name": "Json Outline",
+					"when": "jsonOutlineEnabled"
+				},
+				{
+					"id": "ftpExplorer",
+					"name": "FTP Explorer"
+				},
+				{
+					"id": "fileExplorer",
+					"name": "File Explorer"
+				},
+				{
+					"id": "testView",
+					"name": "Test View"
+				},
+				{
+					"id": "testViewDragAndDrop",
+					"name": "Test View Drag and Drop"
+				}
 			]
-			
 		},
 		"commands": [
 			{
