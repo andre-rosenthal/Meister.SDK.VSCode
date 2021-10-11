@@ -1,26 +1,85 @@
 {
-  "name": "vscode-react-extension-sample",
-  "displayName": "VsCode React extension sample",
-  "publisher": "redgate",
+  "name": "Meister-SDK-vscode-extension",
+  "displayName": "VsCode React SDK extension",
+  "publisher": "gateway architects",
   "description": "",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.47.0"
   },
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.startExtension"
+    "onView:connections",
+    "onCommand:connection.start"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "package-explorer",
+          "title": "meister explorer",
+          "icon": "media/Meister.svg"
+        }
+      ]
+    },
+    "views": {
+      "package-explorer": [
+        {
+          "id": "connections",
+          "name": "connections"
+        },
+        {
+          "id": "endPoints",
+          "name": "endPoints"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "extension.startExtension",
-        "title": "VsCode React extension"
+        "command": "connections.refreshEntry",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "connections.addEntry",
+        "title": "Add"
+      },
+      {
+        "command": "connection.start",
+        "title": "connection"
+      },
+      {
+        "command": "connections.success",
+        "title": "connected"
+      },
+      {
+        "command": "connections.fail",
+        "title": "failed"
+      },
+      {
+        "command": "connections.fillData",
+        "title": "fillData"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "connections.refreshEntry",
+          "when": "view == connections",
+          "group": "navigation"
+        },
+        {
+          "command": "connections.addEntry",
+          "when": "view == connections"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -38,5 +97,10 @@
     "typescript": "^3.3.1",
     "tslint": "^5.12.1",
     "vscode-test": "^1.0.0-next.0"
+  },
+  "dependencies": {
+    "@nechamaa/meister.usermanagement.autnentication": "^1.0.7",
+    "got": "^11.8.2",
+    "request": "^2.88.2"
   }
 }

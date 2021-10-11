@@ -1,69 +1,36 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+const got = require('got');
+const api = require('@nechamaa/meister.usermanagement.autnentication');
 
-const startCommandName = 'extension.startExtension';
-const webViewPanelTitle = 'React extension';
-const webViewPanelId = 'reactExtension';
 
-let webViewPanel : vscode.WebviewPanel;
-
-function startCommandHandler(context: vscode.ExtensionContext): void {
-  const showOptions = {
-    enableScripts: true
-  };
-
-  const panel = vscode.window.createWebviewPanel(
-    webViewPanelId,
-    webViewPanelTitle,
-    vscode.ViewColumn.One,
-    showOptions
-  );
-
-  panel.webview.html = getHtmlForWebview();
-  panel.webview.onDidReceiveMessage(
-    onPanelDidReceiveMessage,
-    undefined,
-    context.subscriptions
-  );
-
-  panel.onDidDispose(onPanelDispose, null, context.subscriptions);
-
-  webViewPanel = panel;
-}
-
-function onPanelDispose(): void {
-  // Clean up panel here
-}
-
-function onPanelDidReceiveMessage(message: any) {
-  switch (message.command) {
-    case 'showInformationMessage':
-      vscode.window.showInformationMessage(message.text);
-      return;
-
-    case 'getDirectoryInfo':
-      runDirCommand((result : string) => webViewPanel.webview.postMessage({ command: 'getDirectoryInfo', directoryInfo: result }));
-      return;
+async function connect(url: string, authorization: string, context: vscode.ExtensionContext) {
+  try {
+    const response = await got(url, {
+      https: {
+        rejectUnauthorized: false
+      },
+      method: 'post',
+      headers: {
+        'Authorization': authorization,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(response.body);
+    if (response.statusCode == 200) {
+      vscode.commands.executeCommand('connections.success');
+    }
+    else {
+      vscode.commands.executeCommand('connections.fail');
+    }
+  } catch (error) {
+    console.log(error);
+    vscode.commands.executeCommand('connections.fail');
   }
 }
 
-function runDirCommand(callback : Function) {
-  var spawn = require('child_process').spawn;
-  var cp = spawn(process.env.comspec, ['/c', 'dir']);
-  
-  cp.stdout.on("data", function(data : any) {
-    const dataString = data.toString();
-
-    callback(dataString);
-  });
-  
-  cp.stderr.on("data", function(data : any) {
-    // No op
-  });
-}
-
-function getHtmlForWebview(): string {
+function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionContext) {
   try {
     const reactApplicationHtmlFilename = 'index.html';
     const htmlPath = path.join(__dirname, reactApplicationHtmlFilename);
@@ -77,7 +44,44 @@ function getHtmlForWebview(): string {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  const startCommand = vscode.commands.registerCommand(startCommandName, () => startCommandHandler(context));
+  api.startApi();
+  vscode.commands.registerCommand('connections.success', () =>
+    vscode.window.showInformationMessage('connected successfully!'));
+  vscode.commands.registerCommand('connections.fail', () =>
+    vscode.window.showInformationMessage('Failed to connect'));
+  vscode.commands.registerCommand('connections.fillData', () => {
+    vscode.window.showInformationMessage(`Please fill all fields`);
+  });
+  vscode.commands.registerCommand('connections.addEntry', () => {
+    vscode.window.showInformationMessage(`Successfully called add entry.`);
 
-  context.subscriptions.push(startCommand);
+    const panel = vscode.window.createWebviewPanel(
+      'connection',
+      'New Meister Connection',
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true
+      }
+    );
+    panel.webview.html = getWebviewContent(panel.webview, context);
+    panel.webview.onDidReceiveMessage(
+      async (message: any) => {
+        switch (message.command) {
+          case 'connect':
+            connect(message.url, message.authorization, context);
+            return;
+          case 'emptyFields':
+            vscode.commands.executeCommand('connections.fillData');
+            return;
+          case 'hello':
+            vscode.commands.executeCommand('connections.success');
+            return;
+        }
+      },
+      undefined,
+      context.subscriptions
+    );
+
+  });
+  
 }
