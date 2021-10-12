@@ -3,9 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 const got = require('got');
 const api = require('@nechamaa/meister.usermanagement.autnentication');
+const jsonfile = require('jsonfile');
 
-
-async function connect(url: string, authorization: string, context: vscode.ExtensionContext) {
+async function connect(url: string, authorization: string, context: vscode.ExtensionContext, panel: any, data: any) {
   try {
     const response = await got(url, {
       https: {
@@ -20,14 +20,40 @@ async function connect(url: string, authorization: string, context: vscode.Exten
     console.log(response.body);
     if (response.statusCode == 200) {
       vscode.commands.executeCommand('connections.success');
+      panel.webview.postMessage({ command: 'connected' });
     }
     else {
+      panel.webview.postMessage({ command: 'fail' });
       vscode.commands.executeCommand('connections.fail');
     }
   } catch (error) {
     console.log(error);
     vscode.commands.executeCommand('connections.fail');
   }
+}
+
+function save(data: any, panel:any) {
+  const filePath = path.join(__dirname, './connections.json');
+  let connections;
+  let arr: any[];
+  if (fs.existsSync(filePath)) {
+    connections = jsonfile.readFileSync(filePath);
+    arr = [...connections];
+    if (arr.find(connection => {
+      connection.connectionName === data.connectionName
+    })) {
+      panel.webview.postMessage({ command: 'exists' });
+      return;
+    }
+  }
+  else {
+    arr = [];
+  }
+  arr.push(data);
+  jsonfile.writeFileSync(filePath, arr, function (err: any) {
+    if (err) console.error(err)
+  });
+  panel.webview.postMessage({command: 'saved'})
 }
 
 function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionContext) {
@@ -45,8 +71,16 @@ function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionCon
 
 export function activate(context: vscode.ExtensionContext) {
   api.startApi();
-  vscode.commands.registerCommand('connections.success', () =>
-    vscode.window.showInformationMessage('connected successfully!'));
+  vscode.commands.registerCommand('connections.edit',panel=> {
+    panel.webview.postMessage({ command: 'edit' });
+  });
+  vscode.commands.registerCommand('connections.save', (data: any, panel:any) => {
+    save(data, panel);
+    vscode.window.showInformationMessage('connection saved!');
+  })
+  vscode.commands.registerCommand('connections.success', () => {
+    vscode.window.showInformationMessage('connected successfully!');
+  });
   vscode.commands.registerCommand('connections.fail', () =>
     vscode.window.showInformationMessage('Failed to connect'));
   vscode.commands.registerCommand('connections.fillData', () => {
@@ -68,13 +102,16 @@ export function activate(context: vscode.ExtensionContext) {
       async (message: any) => {
         switch (message.command) {
           case 'connect':
-            connect(message.url, message.authorization, context);
+            connect(message.url, message.authorization, context, panel, message.connection);
             return;
           case 'emptyFields':
             vscode.commands.executeCommand('connections.fillData');
             return;
-          case 'hello':
-            vscode.commands.executeCommand('connections.success');
+          case 'save':
+            vscode.commands.executeCommand('connections.save', message.data, panel);
+            return;
+          case 'edit':
+            vscode.commands.executeCommand('connections.edit', panel);
             return;
         }
       },
@@ -85,3 +122,5 @@ export function activate(context: vscode.ExtensionContext) {
   });
   
 }
+
+
