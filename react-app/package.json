@@ -29,6 +29,7 @@
     "@nechamaa/meister.usermanagement.autnentication": "^1.0.7",
     "got": "^11.8.2",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react-dom": "^16.8.6",
+    "uuid": "^8.3.2"
   }
 }

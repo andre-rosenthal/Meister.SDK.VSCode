@@ -69,6 +69,22 @@
       {
         "command": "connections.fillData",
         "title": "fillData"
+      },
+      {
+        "command": "connections.editEntry",
+        "title": "Edit",
+        "icon": {
+          "light": "resources/light/edit.svg",
+          "dark": "resources/dark/edit.svg"
+        }
+      },
+      {
+        "command": "connections.deleteEntry",
+        "title": "Delete",
+        "icon": {
+          "light": "resources/light/delete.svg",
+          "dark": "resources/dark/delete.svg"
+        }
       }
     ],
     "menus": {
@@ -81,6 +97,18 @@
         {
           "command": "connections.addEntry",
           "when": "view == connections"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "connections.editEntry",
+          "when": "view == connections",
+          "group": "inline"
+        },
+        {
+          "command": "connections.deleteEntry",
+          "when": "view == connections",
+          "group": "inline"
         }
       ]
     }
@@ -103,8 +131,11 @@
     "vscode-test": "^1.0.0-next.0"
   },
   "dependencies": {
+    "@gateway.architects/meister.usermanagement.authentication": "^1.0.4",
+    "@gateway.architects/meister.usermanagement.authentication.": "^1.0.3",
     "@nechamaa/meister.usermanagement.autnentication": "^1.0.7",
     "got": "^11.8.2",
+    "jsonfile": "^6.1.0",
     "request": "^2.88.2"
   }
 }
