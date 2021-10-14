@@ -6,8 +6,9 @@ const api = require('@gateway.architects/meister.usermanagement.authentication')
 const jsonfile = require('jsonfile');
 import { TreeDataProvider } from './treeview';
 
-function editWebview(name:any, panel:any) {
-  const filePath = path.join(__dirname, './connections.json');
+const filePath = path.join(__dirname, './connections.json');
+
+function editWebview(name: any, panel: any) {
   let connection;
   let connections;
   let arr: any[];
@@ -15,7 +16,7 @@ function editWebview(name:any, panel:any) {
     connections = jsonfile.readFileSync(filePath);
     arr = [...connections];
     connection = arr.find(connection =>
-      connection.connectionName === name.label || connection.connectionName === name
+      connection.connectionId === name.id || connection.connectionName === name
     )
     console.log(connection);
 
@@ -23,7 +24,7 @@ function editWebview(name:any, panel:any) {
   panel.webview.postMessage({ command: 'open webview', details: connection })
 }
 
-async function connect(url: string, authorization: string, context: vscode.ExtensionContext, panel: any, body: any, again:boolean) {
+async function connect(url: string, authorization: string, context: vscode.ExtensionContext, panel: any, body: any, again: boolean) {
   try {
     const response = await got(url, {
       method: 'post',
@@ -35,6 +36,8 @@ async function connect(url: string, authorization: string, context: vscode.Exten
     });
     console.log(response.body);
     if (response.statusCode == 200) {
+      console.log(response.body);
+
       vscode.commands.executeCommand('connections.success');
       if (again) {
         panel.webview.postMessage({ command: 'connectedAgain' });
@@ -42,7 +45,7 @@ async function connect(url: string, authorization: string, context: vscode.Exten
       else {
         panel.webview.postMessage({ command: 'connected' });
       }
-      
+
     }
     else {
       panel.webview.postMessage({ command: 'fail' });
@@ -51,11 +54,12 @@ async function connect(url: string, authorization: string, context: vscode.Exten
   } catch (error) {
     console.log(error);
     vscode.commands.executeCommand('connections.fail');
+    panel.webview.postMessage({ command: 'fail' });
+
   }
 }
 
-function save(data: any, panel:any) {
-  const filePath = path.join(__dirname, './connections.json');
+function save(data: any, panel: any) {
   let connections;
   let arr: any[];
   if (fs.existsSync(filePath)) {
@@ -65,7 +69,7 @@ function save(data: any, panel:any) {
       return connection.connectionName === data.connectionName;
     });
     if (found) {
-     panel.webview.postMessage({ command: 'exists' });
+      panel.webview.postMessage({ command: 'exists' });
       vscode.commands.executeCommand('connections.exists');
       return;
     }
@@ -77,7 +81,7 @@ function save(data: any, panel:any) {
   jsonfile.writeFileSync(filePath, arr, function (err: any) {
     if (err) console.error(err)
   });
-  vscode.window.registerTreeDataProvider('connections', new TreeDataProvider());
+  vscode.window.registerTreeDataProvider('connections', new TreeDataProvider('connections', null));
   panel.webview.postMessage({ command: 'saved' });
   vscode.window.showInformationMessage('connection saved!');
 }
@@ -86,16 +90,16 @@ function edit(data: any, panel: any) {
   const filePath = path.join(__dirname, './connections.json');
   let connections;
   let arr: any[];
-    connections = jsonfile.readFileSync(filePath);
-    arr = [...connections];
-    let filtered = arr.filter(connection => connection.connectionId !== data.connectionId);
-        filtered.push(data);
-        jsonfile.writeFileSync(filePath, filtered, function (err: any) {
-          if (err) console.error(err)
-        });
+  connections = jsonfile.readFileSync(filePath);
+  arr = [...connections];
+  let filtered = arr.filter(connection => connection.connectionId !== data.connectionId);
+  filtered.push(data);
+  jsonfile.writeFileSync(filePath, filtered, function (err: any) {
+    if (err) console.error(err)
+  });
   panel.webview.postMessage({ command: 'edited' });
   vscode.window.showInformationMessage(`The changes have been saved successfully`);
-      }
+}
 
 
 function openPanel(context: vscode.ExtensionContext) {
@@ -131,17 +135,27 @@ function openPanel(context: vscode.ExtensionContext) {
   return panel;
 }
 
-function deleteConnection(id:any) {
-  const filePath = path.join(__dirname, './connections.json');
-  let connections;
-  let arr: any[];
-  connections = jsonfile.readFileSync(filePath);
-  arr = [...connections];
-  let filtered = arr.filter(connection => connection.connectionId !== id);
-  jsonfile.writeFileSync(filePath, filtered, function (err: any) {
-    if (err) console.error(err)
-  });
-  vscode.window.registerTreeDataProvider('connections', new TreeDataProvider());
+function deleteConnection(id: any) {
+  vscode.window
+    .showInformationMessage(
+      "Are you sure you want to delete the connection?",
+      ...["Yes", "No"]
+    )
+    .then((answer) => {
+      if (answer === "Yes") {
+        const filePath = path.join(__dirname, './connections.json');
+        let connections;
+        let arr: any[];
+        connections = jsonfile.readFileSync(filePath);
+        arr = [...connections];
+        let filtered = arr.filter(connection => connection.connectionId !== id);
+        jsonfile.writeFileSync(filePath, filtered, function (err: any) {
+          if (err) console.error(err)
+        });
+        vscode.window.registerTreeDataProvider('connections', new TreeDataProvider('connections', null));
+      }
+    });
+
 }
 
 function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionContext) {
@@ -159,7 +173,7 @@ function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionCon
 
 export function activate(context: vscode.ExtensionContext) {
   api.startApi();
-  vscode.window.registerTreeDataProvider('connections', new TreeDataProvider());
+  vscode.window.registerTreeDataProvider('connections', new TreeDataProvider('connections', null));
   vscode.commands.registerCommand('connections.exists', () => {
     vscode.window.showErrorMessage('connection already exists');
   })
@@ -168,31 +182,55 @@ export function activate(context: vscode.ExtensionContext) {
   });
   vscode.commands.registerCommand('connections.save', (data: any, panel: any) => {
     save(data, panel);
-    
+
   })
   vscode.commands.registerCommand('connections.success', () => {
     vscode.window.showInformationMessage('connected successfully!');
   });
 
-  
+
   vscode.commands.registerCommand('connections.fail', () =>
     vscode.window.showInformationMessage('Failed to connect'));
   vscode.commands.registerCommand('connections.fillData', () => {
     vscode.window.showInformationMessage(`Please fill all fields`);
   });
+
   vscode.commands.registerCommand('connections.addEntry', () => {
     openPanel(context);
+  });
+  vscode.commands.registerCommand('connections.refreshEntry', () => {
+    vscode.window.registerTreeDataProvider('connections', new TreeDataProvider('connections'));
+
   });
 
   vscode.commands.registerCommand('connections.editEntry', (name: any) => {
     const panel = openPanel(context);
-    editWebview(name,panel)
+    editWebview(name, panel)
+  });
+
+  vscode.commands.registerCommand('connections.connect', (connection: any) => {
+    const panel = openPanel(context);
+    let connectionDtails;
+    let connections;
+    let arr: any[];
+    if (fs.existsSync(filePath)) {
+      connections = jsonfile.readFileSync(filePath);
+      arr = [...connections];
+      connectionDtails = arr.find(item =>
+        item.connectionId === connection.id
+      )
+      console.log(connectionDtails);
+
+    }
+    panel.webview.postMessage({ command: 'mode', mode: 'header', connection: connectionDtails });
+    vscode.window.registerTreeDataProvider('endPoints', new TreeDataProvider('endPoints', connectionDtails));
+
   });
   vscode.commands.registerCommand('connections.deleteEntry', (connection: any) => {
     deleteConnection(connection.id);
   })
-  
-  
-  }
+
+
+}
 
 

@@ -85,6 +85,14 @@
           "light": "resources/light/delete.svg",
           "dark": "resources/dark/delete.svg"
         }
+      },
+      {
+        "command": "connections.connect",
+        "title": "connect",
+        "icon": {
+          "light": "resources/light/connect.svg",
+          "dark": "resources/dark/connect.svg"
+        }
       }
     ],
     "menus": {
@@ -102,6 +110,11 @@
       "view/item/context": [
         {
           "command": "connections.editEntry",
+          "when": "view == connections",
+          "group": "inline"
+        },
+        {
+          "command": "connections.connect",
           "when": "view == connections",
           "group": "inline"
         },
