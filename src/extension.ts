@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 const got = require('got');
-const api = require('@gateway.architects/meister.usermanagement.authentication');
+// const api = require('@gateway.architects/meister.usermanagement.authentication');
+const api = require('@gateway.architects/api.sdk.meister');
 const jsonfile = require('jsonfile');
 import { TreeDataProvider } from './treeview';
 
@@ -171,6 +172,34 @@ function getWebviewContent(webview: vscode.Webview, context: vscode.ExtensionCon
   }
 }
 
+async function getSDK() {
+  let vscodeUrl = 'https://api.media.atlassian.com/file/dea2fe0e-ff9c-4608-95b8-1f65b4ae00cf/binary?token=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkNjZmODU4MC05ZDY4LTRiNjctYTI0NC1jMDAxOTE0NzY4ZGEiLCJhY2Nlc3MiOnsidXJuOmZpbGVzdG9yZTpmaWxlOmRlYTJmZTBlLWZmOWMtNDYwOC05NWI4LTFmNjViNGFlMDBjZiI6WyJyZWFkIl19LCJleHAiOjE2MzQyNzYwMjUsIm5iZiI6MTYzNDE5MzA0NX0.JxAfSzJuX9AUPjgEMhkpT-206kPRC1Iq_TyDl9ikBFE&client=d66f8580-9d68-4b67-a244-c001914768da&name=New%20sdk%20response%20from%20lookup.json'
+  let url = 'https://api.media.atlassian.com/file/5d05b1c9-4d0b-44d8-a125-4affdb00a492/binary?token=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkNjZmODU4MC05ZDY4LTRiNjctYTI0NC1jMDAxOTE0NzY4ZGEiLCJhY2Nlc3MiOnsidXJuOmZpbGVzdG9yZTpmaWxlOjVkMDViMWM5LTRkMGItNDRkOC1hMTI1LTRhZmZkYjAwYTQ5MiI6WyJyZWFkIl19LCJleHAiOjE2MzQ1MzE2NDMsIm5iZiI6MTYzNDQ0ODY2M30.0yakHaeyQcfo7krSDpjmzX5W5LQoNbIopKuWaAlMhTY&client=d66f8580-9d68-4b67-a244-c001914768da&name=Legacy%20sdk%20response%20from%20lookup.json'
+  try {
+
+    const response = await got(url);
+    if (response.statusCode == 200) {
+      let jsonRespons = JSON.parse(response.body);
+      var result:any[] = [];
+      jsonRespons[0].details.forEach((element: any) => {
+        console.log(element.project);
+        result.push(element.project)
+      });
+      return result;
+
+    }
+    else {
+      console.log("eror");
+
+    }
+
+  } catch (err) {
+    const ex: any = err;
+    console.log(ex);
+  }
+
+}
+
 export function activate(context: vscode.ExtensionContext) {
   api.startApi();
   vscode.window.registerTreeDataProvider('connections', new TreeDataProvider('connections', null));
@@ -208,7 +237,7 @@ export function activate(context: vscode.ExtensionContext) {
     editWebview(name, panel)
   });
 
-  vscode.commands.registerCommand('connections.connect', (connection: any) => {
+  vscode.commands.registerCommand('connections.connect', async(connection: any) => {
     const panel = openPanel(context);
     let connectionDtails;
     let connections;
@@ -219,7 +248,10 @@ export function activate(context: vscode.ExtensionContext) {
       connectionDtails = arr.find(item =>
         item.connectionId === connection.id
       )
-      console.log(connectionDtails);
+     let projects=await getSDK();
+     connectionDtails.projects= projects;
+     console.log(connectionDtails);
+
 
     }
     panel.webview.postMessage({ command: 'mode', mode: 'header', connection: connectionDtails });
