@@ -36,7 +36,7 @@ export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
                 [new TreeItem('Wrapper Manager ', '', null, [new TreeItem('wrappers', '', null)]), new TreeItem('Meister Project', '', null,
                     connectionDtails.projects.map((element: any) => new TreeItem(element.project, '', '', element.modules.map((module: any) =>
                         new TreeItem(module.name, '', '', module.endPoints.map((endPoint: any) =>
-                            new TreeItem(endPoint.namespace,'','',[new TreeItem('Request','','',[new TreeItem(endPoint.styles[0])]),new TreeItem('Response','','',[new TreeItem(endPoint.styles[1])])]))))))), new TreeItem('Json Library')])]
+                            new TreeItem(endPoint.namespace,'','',[new TreeItem(endPoint.styles[0]),new TreeItem(endPoint.styles[1])]))))))), new TreeItem('Json Library')])]
         }
 
     }
@@ -56,14 +56,19 @@ export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
 class TreeItem extends vscode.TreeItem {
     children: TreeItem[] | undefined;
 
-    constructor(label: string, id?: string, command?: any, children?: TreeItem[],
+    constructor(label: string,  id?: string, command?: any, children?: TreeItem[],iconPath?:any
     ) {
         super(
             label,
             children === undefined ? vscode.TreeItemCollapsibleState.None :
-                vscode.TreeItemCollapsibleState.Expanded);
+                vscode.TreeItemCollapsibleState.Collapsed);
         this.command = command;
         this.children = children;
         this.id = id;
+        this.iconPath= iconPath;
     }
+    // iconPath = {
+    //     light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+    //     dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+    // };
 }
