@@ -180,10 +180,22 @@ async function getSDK() {
     const response = await got(url);
     if (response.statusCode == 200) {
       let jsonRespons = JSON.parse(response.body);
-      var result:any[] = [];
+      var result: any[] = [];
       jsonRespons[0].details.forEach((element: any) => {
-        console.log(element.project);
-        result.push(element.project)
+        // let modules:any[]=[];
+        // let endPoints: any[] = [];
+        let modules = element.modules.map((element: any) => {
+          let endPoints = element.endpoints.map((endPoints: any) => {
+            let styles = endPoints.styles.map((style: any) =>
+              style.name
+            )
+            return {namespace:endPoints.namespace ,styles}
+          })
+          return { name: element.name, endPoints }
+        });
+        // let endPoints = element.modules.map((element: any) => element.name);
+
+        result.push({ project: element.project, modules: modules })
       });
       return result;
 
@@ -237,7 +249,7 @@ export function activate(context: vscode.ExtensionContext) {
     editWebview(name, panel)
   });
 
-  vscode.commands.registerCommand('connections.connect', async(connection: any) => {
+  vscode.commands.registerCommand('connections.connect', async (connection: any) => {
     const panel = openPanel(context);
     let connectionDtails;
     let connections;
@@ -248,9 +260,9 @@ export function activate(context: vscode.ExtensionContext) {
       connectionDtails = arr.find(item =>
         item.connectionId === connection.id
       )
-     let projects=await getSDK();
-     connectionDtails.projects= projects;
-     console.log(connectionDtails);
+      let projects = await getSDK();
+      connectionDtails.projects = projects;
+      console.log(connectionDtails);
 
 
     }

@@ -33,8 +33,10 @@ export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
         }
         else {
             this.data = [new TreeItem('Getway ' + connectionDtails.connectionName + '@' + connectionDtails.cNumber, connectionDtails.connectionId, null,
-             [new TreeItem('Wrapper Manager ', '', null, [new TreeItem('wrappers','',null)]),new TreeItem('Meister Project','',null,
-             connectionDtails.projects.map((project:any)=> new TreeItem(project))), new TreeItem('Json Library')])]
+                [new TreeItem('Wrapper Manager ', '', null, [new TreeItem('wrappers', '', null)]), new TreeItem('Meister Project', '', null,
+                    connectionDtails.projects.map((element: any) => new TreeItem(element.project, '', '', element.modules.map((module: any) =>
+                        new TreeItem(module.name, '', '', module.endPoints.map((endPoint: any) =>
+                            new TreeItem(endPoint.namespace,'','',[new TreeItem('Request','','',[new TreeItem(endPoint.styles[0])]),new TreeItem('Response','','',[new TreeItem(endPoint.styles[1])])]))))))), new TreeItem('Json Library')])]
         }
 
     }
